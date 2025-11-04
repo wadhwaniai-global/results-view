@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Assessment Results Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #e0e7ff 100%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .student-selector {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .student-selector label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-student {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-student:hover {
+            background: #d1d5db;
+        }
+
+        .btn-student.active {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-export {
+            background: #16a34a;
+            color: white;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-export:hover {
+            background: #15803d;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .error-analysis {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 40px;
+        }
+
+        .pie-container {
+            width: 50%;
+            height: 300px;
+        }
+
+        .legend {
+            width: 30%;
+        }
+
+        .legend h3 {
+            font-size: 1.125rem;
+            margin-bottom: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+
+        .legend-color.hit { background: #ef4444; }
+        .legend-color.miss { background: #fb923c; }
+        .legend-color.extra { background: #fbbf24; }
+
+        .passage-container {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .passage-words {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 1.125rem;
+            line-height: 1.75;
+        }
+
+        .word {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .word:hover {
+            opacity: 0.8;
+        }
+
+        .word.hit {
+            background: #ef4444;
+            color: white;
+        }
+
+        .word.miss {
+            background: #fb923c;
+            color: white;
+        }
+
+        .word.extra {
+            background: #fbbf24;
+            color: #1f2937;
+        }
+
+        .word.active {
+            border-color: #3b82f6;
+        }
+
+        .playback-controls {
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .current-word-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .current-word-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .current-word-text .word-highlight {
+            color: #4f46e5;
+        }
+
+        .word-counter {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-left: 16px;
+        }
+
+        .word-tag {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .controls-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .control-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .control-btn.small {
+            background: #d1d5db;
+        }
+
+        .control-btn.small:hover:not(:disabled) {
+            background: #9ca3af;
+        }
+
+        .control-btn.play {
+            width: 56px;
+            height: 56px;
+            background: #4f46e5;
+            color: white;
+        }
+
+        .control-btn.play:hover {
+            background: #4338ca;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timestamp {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .icon.large {
+            width: 28px;
+            height: 28px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="card">
+            <h1>Reading Assessment Results</h1>
+            <div class="student-selector">
+                <label>Select Student:</label>
+                <button class="btn btn-student active" data-student="madeline">Madeline</button>
+                <button class="btn btn-student" data-student="ashwin">Ashwin</button>
+                <button class="btn btn-export" id="exportBtn">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- CWPM Trend Chart -->
+        <div class="card">
+            <h2>CWPM Trend Over Time</h2>
+            <div class="chart-container">
+                <canvas id="cwpmChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Error Analysis -->
+        <div class="card">
+            <h2>Error Distribution Analysis</h2>
+            <div class="error-analysis">
+                <div class="pie-container">
+                    <canvas id="errorChart"></canvas>
+                </div>
+                <div class="legend">
+                    <h3>Legend</h3>
+                    <div class="legend-item">
+                        <div class="legend-color hit"></div>
+                        <span><strong>Hit (Correct)</strong></span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color miss"></div>
+                        <span><strong>Miss (Misread)</strong></span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color extra"></div>
+                        <span><strong>Extra (Skipped)</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Passage Playback -->
+        <div class="card">
+            <h2>Word-Level Analysis & Playback</h2>
+            
+            <!-- Passage Display -->
+            <div class="passage-container">
+                <div class="passage-words" id="passageWords"></div>
+            </div>
+
+            <!-- Playback Controls -->
+            <div class="playback-controls">
+                <div class="current-word-info">
+                    <div class="current-word-text">
+                        Current Word: <span class="word-highlight" id="currentWordText">The</span>
+                        <span class="word-counter" id="wordCounter">(1 of 12)</span>
+                    </div>
+                    <div class="word-tag" id="currentWordTag">HIT</div>
+                </div>
+
+                <div class="controls-buttons">
+                    <button class="control-btn small" id="prevBtn">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="control-btn play" id="playBtn">
+                        <svg class="icon large" id="playIcon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg class="icon large" id="pauseIcon" fill="currentColor" viewBox="0 0 24 24" style="display: none;">
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="control-btn small" id="nextBtn">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="timestamp" id="timestamp">Timestamp: 0.00s</div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        // Data
+        const data = {
+            madeline: {
+                cwpm: [
+                    { date: '2024-10-01', cwpm: 45 },
+                    { date: '2024-10-08', cwpm: 52 },
+                    { date: '2024-10-15', cwpm: 58 },
+                    { date: '2024-10-22', cwpm: 55 },
+                    { date: '2024-10-29', cwpm: 63 }
+                ],
+                errors: { hit: 82, miss: 12, extra: 6 },
+                words: [
+                    { text: 'The', tag: 'hit', timestamp: 0.0 },
+                    { text: 'quick', tag: 'hit', timestamp: 0.3 },
+                    { text: 'brown', tag: 'miss', timestamp: 0.6 },
+                    { text: 'fox', tag: 'hit', timestamp: 1.0 },
+                    { text: 'jumps', tag: 'extra', timestamp: 1.3 },
+                    { text: 'over', tag: 'hit', timestamp: 1.7 },
+                    { text: 'the', tag: 'hit', timestamp: 2.0 },
+                    { text: 'lazy', tag: 'hit', timestamp: 2.3 },
+                    { text: 'dog', tag: 'miss', timestamp: 2.7 },
+                    { text: 'in', tag: 'hit', timestamp: 3.1 },
+                    { text: 'the', tag: 'hit', timestamp: 3.3 },
+                    { text: 'meadow', tag: 'hit', timestamp: 3.6 }
+                ]
+            },
+            ashwin: {
+                cwpm: [
+                    { date: '2024-10-01', cwpm: 38 },
+                    { date: '2024-10-08', cwpm: 42 },
+                    { date: '2024-10-15', cwpm: 47 },
+                    { date: '2024-10-22', cwpm: 51 },
+                    { date: '2024-10-29', cwpm: 56 }
+                ],
+                errors: { hit: 75, miss: 18, extra: 7 },
+                words: [
+                    { text: 'The', tag: 'hit', timestamp: 0.0 },
+                    { text: 'quick', tag: 'miss', timestamp: 0.4 },
+                    { text: 'brown', tag: 'hit', timestamp: 0.8 },
+                    { text: 'fox', tag: 'hit', timestamp: 1.2 },
+                    { text: 'jumps', tag: 'hit', timestamp: 1.6 },
+                    { text: 'over', tag: 'extra', timestamp: 2.0 },
+                    { text: 'the', tag: 'hit', timestamp: 2.4 },
+                    { text: 'lazy', tag: 'miss', timestamp: 2.7 },
+                    { text: 'dog', tag: 'hit', timestamp: 3.1 },
+                    { text: 'in', tag: 'hit', timestamp: 3.5 },
+                    { text: 'the', tag: 'miss', timestamp: 3.7 },
+                    { text: 'meadow', tag: 'hit', timestamp: 4.0 }
+                ]
+            }
+        };
+
+        let currentStudent = 'madeline';
+        let currentWordIndex = 0;
+        let cwpmChart, errorChart;
+
+        // Initialize charts
+        function initCharts() {
+            const cwpmCtx = document.getElementById('cwpmChart').getContext('2d');
+            cwpmChart = new Chart(cwpmCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CWPM',
+                        data: [],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#4f46e5',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'CWPM' }
+                        }
+                    }
+                }
+            });
+
+            const errorCtx = document.getElementById('errorChart').getContext('2d');
+            errorChart = new Chart(errorCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Correct (Hit)', 'Misread (Miss)', 'Skipped (Extra)'],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#ef4444', '#fb923c', '#fbbf24']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Update charts
+        function updateCharts() {
+            const studentData = data[currentStudent];
+            
+            cwpmChart.data.labels = studentData.cwpm.map(d => d.date);
+            cwpmChart.data.datasets[0].data = studentData.cwpm.map(d => d.cwpm);
+            cwpmChart.update();
+
+            errorChart.data.datasets[0].data = [
+                studentData.errors.hit,
+                studentData.errors.miss,
+                studentData.errors.extra
+            ];
+            errorChart.update();
+        }
+
+        // Render passage
+        function renderPassage() {
+            const words = data[currentStudent].words;
+            const container = document.getElementById('passageWords');
+            container.innerHTML = '';
+
+            words.forEach((word, index) => {
+                const wordEl = document.createElement('button');
+                wordEl.className = `word ${word.tag}`;
+                wordEl.textContent = word.text;
+                wordEl.onclick = () => playWord(index);
+                if (index === currentWordIndex) {
+                    wordEl.classList.add('active');
+                }
+                container.appendChild(wordEl);
+            });
+        }
+
+        // Update current word display
+        function updateCurrentWord() {
+            const words = data[currentStudent].words;
+            const word = words[currentWordIndex];
+            
+            document.getElementById('currentWordText').textContent = word.text;
+            document.getElementById('wordCounter').textContent = 
+                `(${currentWordIndex + 1} of ${words.length})`;
+            document.getElementById('timestamp').textContent = 
+                `Timestamp: ${word.timestamp.toFixed(2)}s`;
+            
+            const tagEl = document.getElementById('currentWordTag');
+            tagEl.textContent = word.tag.toUpperCase();
+            tagEl.className = `word-tag ${word.tag}`;
+            
+            document.getElementById('prevBtn').disabled = currentWordIndex === 0;
+            document.getElementById('nextBtn').disabled = currentWordIndex === words.length - 1;
+            
+            renderPassage();
+        }
+
+        // Play word
+        function playWord(index) {
+            currentWordIndex = index;
+            updateCurrentWord();
+            
+            // Simulate audio playback
+            document.getElementById('playIcon').style.display = 'none';
+            document.getElementById('pauseIcon').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('playIcon').style.display = 'block';
+                document.getElementById('pauseIcon').style.display = 'none';
+            }, 500);
+        }
+
+        // Switch student
+        function switchStudent(student) {
+            currentStudent = student;
+            currentWordIndex = 0;
+            
+            document.querySelectorAll('.btn-student').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.student === student);
+            });
+            
+            updateCharts();
+            updateCurrentWord();
+        }
+
+        // Export CSV
+        function exportCSV() {
+            const studentName = currentStudent.charAt(0).toUpperCase() + currentStudent.slice(1);
+            const studentData = data[currentStudent];
+            const latestCWPM = studentData.cwpm[studentData.cwpm.length - 1].cwpm;
+            
+            let csv = 'Student,Latest CWPM,Correct,Misread,Skipped\n';
+            csv += `${studentName},${latestCWPM},${studentData.errors.hit},${studentData.errors.miss},${studentData.errors.extra}\n\n`;
+            csv += 'Word,Hit,Miss,Extra\n';
+            
+            studentData.words.forEach(word => {
+                csv += `${word.text},${word.tag === 'hit' ? 1 : 0},${word.tag === 'miss' ? 1 : 0},${word.tag === 'extra' ? 1 : 0}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${studentName}_reading_assessment.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Event listeners
+        document.querySelectorAll('.btn-student').forEach(btn => {
+            btn.addEventListener('click', () => switchStudent(btn.dataset.student));
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', exportCSV);
+        document.getElementById('playBtn').addEventListener('click', () => playWord(currentWordIndex));
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentWordIndex > 0) playWord(currentWordIndex - 1);
+        });
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentWordIndex < data[currentStudent].words.length - 1) {
+                playWord(currentWordIndex + 1);
+            }
+        });
+
+        // Initialize
+        initCharts();
+        updateCharts();
+        updateCurrentWord();
+    </script>
+</body>
+</html>
