@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl border border-white/80 rounded-2xl;
+    box-shadow: 
+      0 4px 24px rgba(0, 0, 0, 0.06),
+      0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .btn-glass {
+    @apply bg-blue-500/80 backdrop-blur-xl border border-white/60 text-white rounded-xl px-4 py-2 font-medium transition-all duration-200;
+  }
+
+  .btn-glass:hover {
+    @apply bg-blue-500/90 -translate-y-0.5;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+  }
+
+  .student-card {
+    @apply bg-white/80 border border-white/60 rounded-xl p-3 mb-3 transition-all duration-200 cursor-pointer;
+  }
+
+  .student-card:hover {
+    @apply bg-white/90 translate-x-1 border-blue-500/20;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .cwpm-badge {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg px-3 py-1;
+  }
+
+  .cwpm-score {
+    @apply text-5xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent;
+  }
+
+  .word {
+    @apply px-2.5 py-1.5 rounded-lg cursor-pointer transition-all duration-200 inline-block m-0.5;
+  }
+
+  .word:hover {
+    @apply -translate-y-0.5 scale-105;
+  }
+
+  .word.correct, .word.right {
+    @apply bg-green-500/15;
+  }
+
+  .word.missed {
+    @apply bg-orange-400/15;
+  }
+
+  .word.extra {
+    @apply bg-yellow-400/15;
+  }
+
+  .word.incorrect {
+    @apply bg-red-500/15;
+  }
+
+  .word.active {
+    @apply outline outline-2 outline-blue-500/30 outline-offset-2;
+  }
+
+  .play-btn {
+    @apply w-14 h-14 rounded-full bg-blue-500/80 text-white border border-white/60 flex items-center justify-center transition-all duration-200;
+  }
+
+  .play-btn:hover:not(:disabled) {
+    @apply scale-110 bg-blue-500/90;
+  }
+
+  .play-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .legend-color {
+    @apply w-5 h-5 rounded;
+  }
+
+  .word-detail-section {
+    @apply bg-black/5 rounded-lg p-4;
+  }
+
+  .word-detail-label {
+    @apply text-sm font-medium text-gray-500 mb-2 block;
+  }
+
+  .word-detail-value {
+    @apply text-2xl font-semibold text-gray-900 m-0;
+  }
+
+  .word-detail-answer {
+    @apply text-xl font-medium text-gray-500 m-0;
+  }
+
+  .audio-playback-container {
+    @apply flex items-center gap-4 bg-black/5 rounded-lg p-4;
+  }
+
+  .timestamp-label {
+    @apply text-xs text-gray-500 uppercase tracking-wider mb-1;
+  }
+
+  .timestamp-value {
+    @apply text-base font-semibold text-gray-900;
+  }
+
+  .error-badge {
+    @apply inline-block px-5 py-2.5 rounded-lg text-base font-semibold capitalize;
+  }
+}
+
+

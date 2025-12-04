@@ -1,0 +1,68 @@
+{
+  "cwpm": 49.14,
+  "words": [
+    {
+      "Word": "the",
+      "Align": "the",
+      "error": "right",
+      "start": 0.0,
+      "end": 0.3
+    },
+    {
+      "Word": "quick",
+      "Align": "quik",
+      "error": "incorrect",
+      "start": 0.3,
+      "end": 0.6
+    },
+    {
+      "Word": "brown",
+      "Align": "brown",
+      "error": "right",
+      "start": 0.6,
+      "end": 0.9
+    },
+    {
+      "Word": "fox",
+      "Align": "fox",
+      "error": "right",
+      "start": 0.9,
+      "end": 1.1
+    },
+    {
+      "Word": "jumps",
+      "Align": "jmps",
+      "error": "incorrect",
+      "start": 1.1,
+      "end": 1.4
+    },
+    {
+      "Word": "over",
+      "Align": "over",
+      "error": "right",
+      "start": 1.4,
+      "end": 1.6
+    },
+    {
+      "Word": "the",
+      "Align": "the",
+      "error": "right",
+      "start": 1.6,
+      "end": 1.8
+    },
+    {
+      "Word": "lazy",
+      "Align": "lazy",
+      "error": "right",
+      "start": 1.8,
+      "end": 2.1
+    },
+    {
+      "Word": "dog",
+      "Align": "dog",
+      "error": "right",
+      "start": 2.1,
+      "end": 2.4
+    }
+  ]
+}

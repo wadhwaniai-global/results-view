@@ -1,0 +1,54 @@
+{
+  "cwpm": 35.0,
+  "words": [
+    {
+      "Word": "the",
+      "Align": "the",
+      "error": "right",
+      "start": 0.0,
+      "end": 0.2
+    },
+    {
+      "Word": "system",
+      "Align": "system",
+      "error": "right",
+      "start": 0.2,
+      "end": 0.6
+    },
+    {
+      "Word": "should",
+      "Align": "should",
+      "error": "right",
+      "start": 0.6,
+      "end": 1.0
+    },
+    {
+      "Word": "process",
+      "Align": "process",
+      "error": "right",
+      "start": 1.0,
+      "end": 1.5
+    },
+    {
+      "Word": "this",
+      "Align": "this",
+      "error": "right",
+      "start": 1.5,
+      "end": 1.7
+    },
+    {
+      "Word": "text",
+      "Align": "text",
+      "error": "right",
+      "start": 1.7,
+      "end": 2.0
+    },
+    {
+      "Word": "correctly",
+      "Align": "correctly",
+      "error": "right",
+      "start": 2.0,
+      "end": 2.6
+    }
+  ]
+}

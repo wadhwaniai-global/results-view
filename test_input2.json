@@ -1,0 +1,47 @@
+{
+  "cwpm": 21.0,
+  "words": [
+    {
+      "Word": "hello",
+      "Align": "helo",
+      "error": "incorrect",
+      "start": 0.0,
+      "end": 0.4
+    },
+    {
+      "Word": "world",
+      "Align": "world",
+      "error": "right",
+      "start": 0.4,
+      "end": 0.8
+    },
+    {
+      "Word": "how",
+      "Align": "how",
+      "error": "right",
+      "start": 0.8,
+      "end": 1.0
+    },
+    {
+      "Word": "are",
+      "Align": "yu",
+      "error": "incorrect",
+      "start": 1.0,
+      "end": 1.2
+    },
+    {
+      "Word": "you",
+      "Align": "today",
+      "error": "incorrect",
+      "start": 1.2,
+      "end": 1.5
+    },
+    {
+      "Word": "today",
+      "Align": "fine",
+      "error": "incorrect",
+      "start": 1.5,
+      "end": 2.0
+    }
+  ]
+}
