@@ -16,6 +16,8 @@ import { supabaseApi } from '../utils/supabaseApi';
 import AssessmentModal from './AssessmentModal';
 import WordDetailModal from './WordDetailModal';
 import type { StudentData, PerformanceData, AssessmentDetails } from '../types';
+import { PageHeader, LoadingSpinner, Card, Button, ChartContainer } from '../ui';
+import { getLineChartOptions, getDoughnutChartOptions, getTrendLineDataset, getDoughnutDataset, COLORS } from '../constants';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
 
@@ -101,29 +103,6 @@ type PieChartData = {
   }[];
 };
 
-type ChartOptions = {
-  responsive: boolean;
-  maintainAspectRatio: boolean;
-  plugins: {
-    legend: {
-      display?: boolean;
-      position?: 'bottom';
-      labels?: { color: string; padding: number };
-    };
-  };
-  scales?: {
-    x: {
-      grid: { color: string };
-      ticks: { color: string };
-    };
-    y: {
-      beginAtZero: boolean;
-      grid: { color: string };
-      ticks: { color: string };
-    };
-  };
-};
-
 const ResultsView: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const navigate = useNavigate();
@@ -188,16 +167,7 @@ const ResultsView: React.FC = () => {
         setTrendChartData({
           labels: dates,
           datasets: [
-            {
-              label: 'CWPM Progress',
-              data: cwpmScores,
-              borderColor: '#007AFF',
-              backgroundColor: '#007AFF20',
-              tension: 0.4,
-              fill: true,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-            },
+            getTrendLineDataset('CWPM Progress', cwpmScores),
           ],
         });
 
@@ -250,20 +220,16 @@ const ResultsView: React.FC = () => {
             },
           });
 
-          setPieChartData({
-            labels: ['Correct', 'Missed', 'Extra', 'Incorrect'],
-            datasets: [
-              {
-                data: [
-                  summary.total_correct,
-                  summary.total_missed,
-                  summary.total_extras,
-                  summary.total_incorrect,
-                ],
-                backgroundColor: ['#72FF30', '#FFAE00', '#FFEE00', '#FF3B30'],
-              },
+          const pieData = getDoughnutDataset(
+            [
+              summary.total_correct,
+              summary.total_missed,
+              summary.total_extras,
+              summary.total_incorrect,
             ],
-          });
+            ['Correct', 'Missed', 'Extra', 'Incorrect']
+          );
+          setPieChartData(pieData);
 
           errorIndicesRef.current = words
             .map((word, index) => (word.type !== 'correct' ? index : -1))
@@ -400,42 +366,13 @@ const ResultsView: React.FC = () => {
     }
   };
 
-  const trendOptions: ChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-        ticks: { color: '#6c757d' },
-      },
-      x: {
-        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-        ticks: { color: '#6c757d' },
-      },
-    },
-  };
-
-  const pieOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom' as const,
-        labels: { color: '#1d1d1f', padding: 15 },
-      },
-    },
-  };
+  const trendOptions = getLineChartOptions({ showLegend: false });
+  const pieOptions = getDoughnutChartOptions();
 
   if (loading) {
     return (
       <div className="container-fluid py-4">
-        <div className="text-center py-5">
-          <div className="spinner-border text-secondary" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -454,62 +391,64 @@ const ResultsView: React.FC = () => {
   const latestCWPM = performance.length > 0 ? performance[performance.length - 1].cwpm_score : '--';
 
   return (
-    <div className="container-fluid py-4">
-      <div className="glass-card p-4 mb-4">
-        <div className="row align-items-center">
-          <div className="col-md-6">
-            <h1 className="h3 fw-bold text-dark mb-2">Reading Assessment Results</h1>
-            <p className="text-secondary mb-0">
-              {studentData.student.name} - Grade {studentData.student.grade}
-            </p>
-          </div>
-          <div className="col-md-3 text-center">
+    <div className="container-fluid py-2 sm:py-4 px-2 sm:px-4">
+      <PageHeader
+        title="Reading Assessment Results"
+        subtitle={`${studentData.student.name} - Grade ${studentData.student.grade}`}
+        rightContent={
+          <div className="text-center mt-2 mt-md-0">
             <div className="cwpm-score">{latestCWPM}</div>
-            <div className="text-secondary">CWPM Score</div>
+            <div className="text-secondary text-xs sm:text-sm">CWPM Score</div>
           </div>
-          <div className="col-md-3 text-md-end">
-            <button className="btn btn-glass mb-2" onClick={() => setShowAssessmentModal(true)}>
-              <i className="fas fa-plus me-2"></i>Enter New Assessment
-            </button>
-            <button className="btn btn-secondary" onClick={() => navigate('/')}>
-              <i className="fas fa-arrow-left me-2"></i>Back
-            </button>
-          </div>
-        </div>
-      </div>
+        }
+        actionButtons={
+          <>
+            <Button
+              icon={<i className="fas fa-plus"></i>}
+              onClick={() => setShowAssessmentModal(true)}
+            >
+              Enter New Assessment
+            </Button>
+            <Button
+              variant="secondary"
+              icon={<i className="fas fa-arrow-left"></i>}
+              onClick={() => {
+                navigate('/dashboard');
+              }}
+            >
+              Back
+            </Button>
+          </>
+        }
+      />
 
-      <div className="row g-4 mb-4">
-        <div className="col-lg-8">
-          <div className="glass-card p-4">
-            <h2 className="h4 fw-bold text-dark mb-4">Performance Trend</h2>
-            <div style={{ height: '300px' }}>
-              {trendChartData ? (
-                <Line data={trendChartData} options={trendOptions} />
-              ) : (
-                <div className="text-center py-4 text-secondary">No performance data available</div>
-              )}
-            </div>
-          </div>
+      <div className="row g-2 sm:g-3 md:g-4 mb-3 sm:mb-4">
+        <div className="col-12 col-lg-8">
+          <ChartContainer
+            title="Performance Trend"
+            height={250}
+            className="mb-3 sm:mb-4"
+            emptyMessage="No performance data available"
+          >
+            {trendChartData && <Line data={trendChartData} options={trendOptions} />}
+          </ChartContainer>
         </div>
-        <div className="col-lg-4">
-          <div className="glass-card p-4">
-            <h2 className="h4 fw-bold text-dark mb-4">Error Distribution</h2>
-            <div style={{ height: '300px' }}>
-              {pieChartData ? (
-                <Doughnut data={pieChartData} options={pieOptions} />
-              ) : (
-                <div className="text-center py-4 text-secondary">No assessment data available</div>
-              )}
-            </div>
-          </div>
+        <div className="col-12 col-lg-4">
+          <ChartContainer
+            title="Error Distribution"
+            height={250}
+            emptyMessage="No assessment data available"
+          >
+            {pieChartData && <Doughnut data={pieChartData} options={pieOptions} />}
+          </ChartContainer>
         </div>
       </div>
 
       {assessmentData && (
         <>
-          <div className="glass-card p-4 mb-4">
-            <h2 className="h4 fw-bold text-dark mb-4">Reading Passage Analysis</h2>
-            <div className="passage mb-4">
+          <Card className="mb-3 sm:mb-4">
+            <h2 className="h5 sm:h4 fw-bold text-dark mb-3 sm:mb-4">Reading Passage Analysis</h2>
+            <div className="passage mb-3 sm:mb-4" style={{ fontSize: '0.875rem', lineHeight: '1.6' }}>
               {assessmentData.words.map((word, index) => (
                 <span
                   key={index}
@@ -522,55 +461,52 @@ const ResultsView: React.FC = () => {
               ))}
             </div>
 
-            <div className="row align-items-center">
-              <div className="col-md-6">
-                <div className="d-flex gap-2 align-items-center flex-wrap">
+            <div className="row align-items-start">
+              <div className="col-12 col-md-6 mb-3 mb-md-0">
+                <div className="d-flex flex-wrap gap-2 align-items-center">
                   <button className="play-btn" onClick={togglePlay}>
                     {isPlaying ? '⏸' : '▶'}
                   </button>
-                  <button className="btn btn-glass" onClick={previousWord}>
-                    Previous
-                  </button>
-                  <button className="btn btn-glass" onClick={nextWord}>
-                    Next
-                  </button>
-                  <button
-                    className="btn btn-glass"
+                  <Button size="sm" onClick={previousWord}>Previous</Button>
+                  <Button size="sm" onClick={nextWord}>Next</Button>
+                  <Button
+                    size="sm"
                     onClick={togglePlayErrorsOnly}
                     disabled={isPlaying && !isPlayingErrorsOnly}
+                    icon={<i className="fas fa-exclamation-circle"></i>}
                   >
-                    <i className="fas fa-exclamation-circle me-1"></i>
-                    {isPlayingErrorsOnly ? 'Pause Errors' : 'Play Errors Only'}
-                  </button>
+                    <span className="d-none d-sm-inline">{isPlayingErrorsOnly ? 'Pause Errors' : 'Play Errors Only'}</span>
+                    <span className="d-sm-none">{isPlayingErrorsOnly ? 'Pause' : 'Errors'}</span>
+                  </Button>
                 </div>
               </div>
-              <div className="col-md-6">
-                <div className="d-flex gap-3 flex-wrap justify-content-md-end mt-3 mt-md-0">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="legend-color" style={{ background: 'rgba(114, 255, 48, 0.15)' }}></div>
-                    <small className="text-secondary">Correct</small>
+              <div className="col-12 col-md-6">
+                <div className="d-flex flex-wrap gap-2 sm:gap-3 justify-content-start justify-content-md-end">
+                  <div className="d-flex align-items-center gap-1 sm:gap-2">
+                    <div className="legend-color" style={{ background: COLORS.wordType.correctAlpha, width: '16px', height: '16px', minWidth: '16px' }}></div>
+                    <small className="text-secondary text-xs sm:text-sm">Correct</small>
                   </div>
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="legend-color" style={{ background: 'rgba(255, 174, 0, 0.15)' }}></div>
-                    <small className="text-secondary">Missed</small>
+                  <div className="d-flex align-items-center gap-1 sm:gap-2">
+                    <div className="legend-color" style={{ background: COLORS.wordType.missedAlpha, width: '16px', height: '16px', minWidth: '16px' }}></div>
+                    <small className="text-secondary text-xs sm:text-sm">Missed</small>
                   </div>
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="legend-color" style={{ background: 'rgba(255, 238, 0, 0.15)' }}></div>
-                    <small className="text-secondary">Extra</small>
+                  <div className="d-flex align-items-center gap-1 sm:gap-2">
+                    <div className="legend-color" style={{ background: COLORS.wordType.extraAlpha, width: '16px', height: '16px', minWidth: '16px' }}></div>
+                    <small className="text-secondary text-xs sm:text-sm">Extra</small>
                   </div>
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="legend-color" style={{ background: 'rgba(255, 59, 48, 0.15)' }}></div>
-                    <small className="text-secondary">Incorrect</small>
+                  <div className="d-flex align-items-center gap-1 sm:gap-2">
+                    <div className="legend-color" style={{ background: COLORS.wordType.incorrectAlpha, width: '16px', height: '16px', minWidth: '16px' }}></div>
+                    <small className="text-secondary text-xs sm:text-sm">Incorrect</small>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
 
-          <div className="glass-card p-4">
-            <h2 className="h4 fw-bold text-dark mb-4">Error Analysis</h2>
-            <div className="table-responsive">
-              <table className="table table-light-custom table-hover">
+          <Card>
+            <h2 className="h5 sm:h4 fw-bold text-dark mb-3 sm:mb-4">Error Analysis</h2>
+            <div className="table-responsive" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="table table-light-custom table-hover table-sm">
                 <thead>
                   <tr>
                     <th>Word</th>
@@ -604,7 +540,7 @@ const ResultsView: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         </>
       )}
 

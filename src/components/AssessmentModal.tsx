@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
+import { Modal } from '../ui/Modal';
 
 type AssessmentWord = {
   text: string;
@@ -141,61 +142,59 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({ show, onHide, onSubmi
   };
 
   return (
-    <Modal show={show} onHide={onHide} centered>
-      <div className="glass-card border-0">
-        <Modal.Header className="border-0">
-          <Modal.Title className="text-dark">Enter New Assessment</Modal.Title>
-          <button type="button" className="btn-close" onClick={onHide}></button>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label className="text-dark">Assessment Date</Form.Label>
-              <Form.Control
-                type="date"
-                name="assessmentDate"
-                value={formData.assessmentDate}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="text-dark">Reading Passage</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={4}
-                name="passage"
-                value={formData.passage}
-                onChange={handleChange}
-                placeholder="Enter the reading passage here..."
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="text-dark">CWPM Score</Form.Label>
-              <Form.Control
-                type="number"
-                name="cwpmScore"
-                value={formData.cwpmScore}
-                onChange={handleChange}
-                placeholder="Enter CWPM score"
-                min="0"
-                max="200"
-                step="0.01"
-                required
-              />
-            </Form.Group>
-            <Modal.Footer className="border-0 px-0 pb-0">
-              <Button variant="secondary" onClick={onHide} disabled={submitting}>
-                Cancel
-              </Button>
-              <Button variant="primary" type="submit" disabled={submitting}>
-                {submitting ? 'Submitting...' : 'Submit Assessment'}
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal.Body>
-      </div>
+    <Modal
+      show={show}
+      onHide={onHide}
+      title="Enter New Assessment"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onHide} disabled={submitting}>
+            Cancel
+          </Button>
+          <Button variant="primary" type="submit" form="assessmentForm" disabled={submitting}>
+            {submitting ? 'Submitting...' : 'Submit Assessment'}
+          </Button>
+        </>
+      }
+    >
+      <Form id="assessmentForm" onSubmit={handleSubmit}>
+        <Form.Group className="mb-3">
+          <Form.Label className="text-dark">Assessment Date</Form.Label>
+          <Form.Control
+            type="date"
+            name="assessmentDate"
+            value={formData.assessmentDate}
+            onChange={handleChange}
+            required
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label className="text-dark">Reading Passage</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={4}
+            name="passage"
+            value={formData.passage}
+            onChange={handleChange}
+            placeholder="Enter the reading passage here..."
+            required
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label className="text-dark">CWPM Score</Form.Label>
+          <Form.Control
+            type="number"
+            name="cwpmScore"
+            value={formData.cwpmScore}
+            onChange={handleChange}
+            placeholder="Enter CWPM score"
+            min="0"
+            max="200"
+            step="0.01"
+            required
+          />
+        </Form.Group>
+      </Form>
     </Modal>
   );
 };

@@ -41,11 +41,11 @@
   }
 
   .cwpm-score {
-    @apply text-5xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent;
+    @apply text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent;
   }
 
   .word {
-    @apply px-2.5 py-1.5 rounded-lg cursor-pointer transition-all duration-200 inline-block m-0.5;
+    @apply px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-2.5 md:py-1.5 rounded-lg cursor-pointer transition-all duration-200 inline-block m-0.5 text-sm sm:text-base;
   }
 
   .word:hover {
@@ -73,7 +73,7 @@
   }
 
   .play-btn {
-    @apply w-14 h-14 rounded-full bg-blue-500/80 text-white border border-white/60 flex items-center justify-center transition-all duration-200;
+    @apply w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-500/80 text-white border border-white/60 flex items-center justify-center transition-all duration-200 text-lg sm:text-xl;
   }
 
   .play-btn:hover:not(:disabled) {
@@ -117,7 +117,29 @@
   }
 
   .error-badge {
-    @apply inline-block px-5 py-2.5 rounded-lg text-base font-semibold capitalize;
+    @apply inline-block px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-lg text-sm sm:text-base font-semibold capitalize;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 640px) {
+    .glass-card {
+      @apply rounded-xl;
+      padding: 0.75rem;
+    }
+
+    .btn-glass {
+      @apply px-3 py-1.5 text-sm;
+      width: 100%;
+    }
+
+    table {
+      font-size: 0.875rem;
+    }
+
+    .table th,
+    .table td {
+      padding: 0.5rem;
+    }
   }
 }
 

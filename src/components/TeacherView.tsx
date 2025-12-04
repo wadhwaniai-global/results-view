@@ -13,6 +13,8 @@ import {
 import { Line } from 'react-chartjs-2';
 import { supabaseApi, exportAllStudentsToCSV } from '../utils/supabaseApi';
 import AddStudentModal from './AddStudentModal';
+import { PageHeader, LoadingSpinner, Card, Button, ChartContainer } from '../ui';
+import { getLineChartOptions, getMultiLineDataset, CHART_COLORS } from '../constants/chartConfig';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -97,19 +99,6 @@ const TeacherView: React.FC = () => {
   };
 
   const initChart = async (studentsData: Student[]) => {
-    const colors = [
-      '#007AFF',
-      '#34C759',
-      '#FF9500',
-      '#FF3B30',
-      '#AF52DE',
-      '#FF2D55',
-      '#5856D6',
-      '#32ADE6',
-      '#FFD60A',
-      '#BF5AF2',
-    ];
-
     const allDatesSet = new Set<string>();
     const studentPerformanceMap = new Map<string, PerformanceEntry[]>();
 
@@ -147,17 +136,7 @@ const TeacherView: React.FC = () => {
           return performanceMap[date] !== undefined ? performanceMap[date] : null;
         });
 
-        datasets.push({
-          label: student.name,
-          data: alignedData,
-          borderColor: colors[i % colors.length],
-          backgroundColor: `${colors[i % colors.length]}20`,
-          tension: 0.4,
-          fill: false,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          spanGaps: true,
-        });
+        datasets.push(getMultiLineDataset(student.name, alignedData, i));
       }
     });
 
@@ -167,17 +146,19 @@ const TeacherView: React.FC = () => {
     });
   };
 
+  const baseOptions = getLineChartOptions({
+    showLegend: true,
+    legendPosition: 'bottom',
+    yAxisTitle: 'CWPM Score',
+    xAxisTitle: 'Assessment Date',
+  });
+
   const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
+    ...baseOptions,
     plugins: {
+      ...baseOptions.plugins,
       legend: {
-        position: 'bottom' as const,
-        labels: {
-          color: '#1d1d1f',
-          padding: 15,
-          usePointStyle: true,
-        },
+        ...baseOptions.plugins.legend,
         onClick: (e: unknown, legendItem: any, legend: any) => {
           const index = legendItem.datasetIndex;
           const chart = legend.chart;
@@ -186,30 +167,12 @@ const TeacherView: React.FC = () => {
           chart.update();
         },
       },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false,
-      },
     },
     scales: {
-      y: {
-        beginAtZero: true,
-        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-        ticks: { color: '#6c757d' },
-        title: {
-          display: true,
-          text: 'CWPM Score',
-          color: '#6c757d',
-        },
-      },
+      ...baseOptions.scales,
       x: {
+        ...baseOptions.scales?.x,
         grid: { display: false },
-        ticks: { color: '#6c757d' },
-        title: {
-          display: true,
-          text: 'Assessment Date',
-          color: '#6c757d',
-        },
       },
     },
   };
@@ -233,66 +196,53 @@ const TeacherView: React.FC = () => {
   };
 
   const viewStudentResults = (studentId: string) => {
-    navigate(`/results/${studentId}`);
+    navigate(`/admin/results/${studentId}`);
   };
 
   return (
-    <div className="container-fluid py-4">
-      <div className="glass-card p-4 mb-4">
-        <div className="row align-items-center">
-          <div className="col-md-8">
-            <h1 className="h2 fw-bold text-dark mb-2">Reading Assessment Dashboard</h1>
-            <p className="text-secondary mb-0">
-              Monitor student progress and manage assessments • Powered by Supabase
-            </p>
-          </div>
-          <div className="col-md-4 text-md-end">
-            <button className="btn btn-glass me-2" onClick={() => setShowAddModal(true)}>
-              <i className="fas fa-plus me-2"></i>Add Student
-            </button>
-            <button className="btn btn-success" onClick={exportAllStudentsToCSV}>
-              <i className="fas fa-download me-2"></i>Export CSV
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="container-fluid py-2 sm:py-4 px-2 sm:px-4">
+      <PageHeader
+        title="Reading Assessment Dashboard"
+        subtitle="Monitor student progress and manage assessments • Powered by Supabase"
+        actionButtons={
+          <>
+            <Button icon={<i className="fas fa-plus"></i>} onClick={() => setShowAddModal(true)}>
+              Add Student
+            </Button>
+            <Button variant="success" icon={<i className="fas fa-download"></i>} onClick={exportAllStudentsToCSV}>
+              Export CSV
+            </Button>
+          </>
+        }
+      />
 
-      <div className="row g-4">
-        <div className="col-lg-8">
-          <div className="glass-card p-4 h-100">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h2 className="h4 fw-bold text-dark mb-0">Performance Overview</h2>
-              <small className="text-secondary">
+      <div className="row g-2 sm:g-3 md:g-4">
+        <div className="col-12 col-lg-8">
+          <ChartContainer
+            title="Performance Overview"
+            height={300}
+            className="mb-3 sm:mb-4"
+            loading={loading}
+            emptyMessage="No student data available"
+            headerActions={
+              <small className="text-secondary d-none d-sm-block">
                 <i className="fas fa-info-circle me-1"></i>
                 Click student names to show/hide
               </small>
-            </div>
-            <div style={{ height: '400px' }}>
-              {loading ? (
-                <div className="text-center py-4">
-                  <div className="spinner-border text-secondary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              ) : chartData && chartData.datasets.length > 0 ? (
-                <Line ref={chartRef} data={chartData} options={chartOptions} />
-              ) : (
-                <div className="text-center py-4 text-secondary">No student data available</div>
-              )}
-            </div>
-          </div>
+            }
+          >
+            {chartData && chartData.datasets.length > 0 && (
+              <Line ref={chartRef} data={chartData} options={chartOptions} />
+            )}
+          </ChartContainer>
         </div>
 
-        <div className="col-lg-4">
-          <div className="glass-card p-4 h-100">
-            <h2 className="h4 fw-bold text-dark mb-4">Students</h2>
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+        <div className="col-12 col-lg-4">
+          <Card className="h-100">
+            <h2 className="h5 sm:h4 fw-bold text-dark mb-3 sm:mb-4">Students</h2>
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {loading ? (
-                <div className="text-center py-4">
-                  <div className="spinner-border text-secondary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                </div>
+                <LoadingSpinner />
               ) : students.length === 0 ? (
                 <div className="text-center py-4 text-secondary">
                   <i className="fas fa-users fa-2x mb-3 opacity-50"></i>
@@ -321,7 +271,7 @@ const TeacherView: React.FC = () => {
                 })
               )}
             </div>
-          </div>
+          </Card>
         </div>
       </div>
 
